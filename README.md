@@ -23,8 +23,8 @@ module.exports = {
 
         if (!cookie) return;
 
-        const uid = cookie.split("quid=")[1].split(";")[0];
-        return uid;
+        const uid = /quid=([^;]*);?/g.exec(cookie);
+        return uid ? uid[2] : '';
       },
       // 同步或者异步函数
       getProxyInfo: () => {
