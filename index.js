@@ -89,13 +89,18 @@ class OpenPlatformPlugin {
     
       context.uid = this.getUid(req);
     
+      // 1. 判断是否命中开放平台配置的代理名单
       for (const proxyIp of Object.keys(this.proxyInfo)) {
-        if ((this.proxyInfo[proxyIp].alphaList && this.proxyInfo[proxyIp].alphaList.includes(context.uid))
-            || (this.proxyInfo[proxyIp].remoteAlphaList && this.proxyInfo[proxyIp].remoteAlphaList.includes(context.uid))) {
+        if ((this.proxyInfo[proxyIp].remoteAlphaList && this.proxyInfo[proxyIp].remoteAlphaList.includes(context.uid))
+            && proxyIp !== this.intranetIp) {
           context.proxyIp = proxyIp;
           context.proxyPort = this.proxyInfo[proxyIp].port || "80";
           break;
         }
+      }
+      // 2. 判断是否命中本地名单
+      if (!net.isIP(context.proxyIp) && this.proxyInfo[this.intranetIp].alphaList && this.proxyInfo[this.intranetIp].alphaList.includes(context.uid)) {
+        context.proxyIp = "alpha"; // 不转发，但抓包
       }
 
       console.debug(`${req.method} ${req.url}`);
